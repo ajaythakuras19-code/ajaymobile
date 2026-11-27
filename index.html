@@ -3464,30 +3464,32 @@ setInterval(function() {
   });
 })();
 </script>
- <script>
-// 🛡️ 37. Mobile Dropdown Flicker Stopper (जब ड्रॉपडाउन खुला हो तब रिफ्रेश रोकना)
+<script>
+// 🛡️ 37. Head-Level Dropdown Lock (पेज लोड होते ही सबसे पहले लागू होने वाला पक्का लॉक)
 (function() {
-  window.__dropdownOpen = false;
-  document.addEventListener("focusin", function(e) {
-    if (e.target && e.target.tagName === "SELECT") window.__dropdownOpen = true;
+  window.__selBusy = 0;
+  document.addEventListener("touchstart", function(e) {
+    if (e.target && e.target.closest && e.target.closest("select")) {
+      window.__selBusy = Date.now() + 8000;
+    }
   }, true);
-  document.addEventListener("focusout", function(e) {
-    if (e.target && e.target.tagName === "SELECT") {
-      setTimeout(function() { window.__dropdownOpen = false; }, 300);
+  document.addEventListener("mousedown", function(e) {
+    if (e.target && e.target.closest && e.target.closest("select")) {
+      window.__selBusy = Date.now() + 8000;
     }
   }, true);
   document.addEventListener("change", function(e) {
-    if (e.target && e.target.tagName === "SELECT") window.__dropdownOpen = false;
+    if (e.target && e.target.tagName === "SELECT") {
+      window.__selBusy = 0;
+    }
   }, true);
 
-  var origSetInt = window.setInterval;
-  window.setInterval = function(fn, delay) {
-    if (delay && delay <= 1500) {
-      return origSetInt(function() {
-        if (!window.__dropdownOpen) fn();
-      }, delay);
-    }
-    return origSetInt(fn, delay);
+  var rawSetInt = window.setInterval;
+  window.setInterval = function(fn, ms) {
+    return rawSetInt(function() {
+      if (Date.now() < window.__selBusy) return;
+      fn();
+    }, ms);
   };
 })();
 </script>

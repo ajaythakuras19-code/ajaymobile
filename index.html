@@ -3464,5 +3464,32 @@ setInterval(function() {
   });
 })();
 </script>
+ <script>
+// 🛡️ 37. Mobile Dropdown Flicker Stopper (जब ड्रॉपडाउन खुला हो तब रिफ्रेश रोकना)
+(function() {
+  window.__dropdownOpen = false;
+  document.addEventListener("focusin", function(e) {
+    if (e.target && e.target.tagName === "SELECT") window.__dropdownOpen = true;
+  }, true);
+  document.addEventListener("focusout", function(e) {
+    if (e.target && e.target.tagName === "SELECT") {
+      setTimeout(function() { window.__dropdownOpen = false; }, 300);
+    }
+  }, true);
+  document.addEventListener("change", function(e) {
+    if (e.target && e.target.tagName === "SELECT") window.__dropdownOpen = false;
+  }, true);
+
+  var origSetInt = window.setInterval;
+  window.setInterval = function(fn, delay) {
+    if (delay && delay <= 1500) {
+      return origSetInt(function() {
+        if (!window.__dropdownOpen) fn();
+      }, delay);
+    }
+    return origSetInt(fn, delay);
+  };
+})();
+</script>
 </body>
 </html>
